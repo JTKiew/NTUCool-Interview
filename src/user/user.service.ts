@@ -73,6 +73,6 @@ export class UserService {
     }
 
     validId(userId: number){
-        return this.users.some((obj) => (obj.id === userId))
+        return this.users.some((obj) => (obj.id === Number(userId)));
     }
 }

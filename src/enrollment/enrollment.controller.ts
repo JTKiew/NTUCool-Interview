@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { addEnrollmentDto, queryEnrollCourseDto, queryEnrollmentDto, queryEnrollUserDto} from 'src/dto';
+import { addEnrollmentDto, queryEnrollmentDto} from 'src/dto';
 import { EnrollmentService } from './enrollment.service';
 
 @ApiTags('Enrollments')
@@ -9,9 +9,10 @@ export class EnrollmentController {
     constructor( private enrollService: EnrollmentService) {}
 
     // query Users by courseId
-    @Get('/courses/:courseId/users')
-    queryCourseUser(@Query() dto: queryEnrollUserDto){
-        return this.enrollService.queryCourseUser(Number(dto.courseId));
+    @Get('courses/:courseId/users')
+    queryCourseUser(
+        @Param('courseId', ParseIntPipe) courseId: number){
+        return this.enrollService.queryCourseUser(courseId);
     }
 
     @ApiBearerAuth()
@@ -35,15 +36,15 @@ export class EnrollmentController {
     }
 
     // query enrollment by userId, courseId and role
-    @Get('enrollment')
+    @Get()
     queryEnrollment(@Query() dto: queryEnrollmentDto){
         console.log({dto})
         return this.enrollService.queryEnroll(dto);
     }
 
     // query Courses by userId
-    @Get('/users/:userId/courses')
-    queryUserCourse(@Query() dto: queryEnrollCourseDto ){
-        return this.enrollService.queryUserCourse(Number(dto.userId));
+    @Get('users/:userId/courses')
+    queryUserCourse(@Param('userId', ParseIntPipe) userId: number){
+        return this.enrollService.queryUserCourse(userId);
     }
 }

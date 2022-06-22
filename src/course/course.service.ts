@@ -14,6 +14,6 @@ export class CourseService {
     }
 
     validId(courseId: number){
-        return this.courses.some((obj) => (obj.id === courseId))
+        return this.courses.some((obj) => (obj.id === Number(courseId)))
     }
 }

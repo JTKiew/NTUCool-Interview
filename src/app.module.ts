@@ -11,16 +11,17 @@ import { BearerTokenCheckMiddleware } from './BearerAuth.middleware';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements NestModule{
-  configure(consumer: MiddlewareConsumer) {
-      consumer  
-        .apply(BearerTokenCheckMiddleware)
-        .forRoutes(
-          // add middleware to route path that require Bearer Auth token validation
-          {path: 'user/create', method: RequestMethod.POST},
-          {path: 'user/edit/*', method: RequestMethod.PUT},
-          {path: 'user/delete/*', method: RequestMethod.DELETE},
-          {path: 'enrollment/add', method: RequestMethod.POST},
-          {path: 'enrollment/delete/*', method: RequestMethod.DELETE})
-  }
-}
+export class AppModule{}
+//  implements NestModule{
+//   configure(consumer: MiddlewareConsumer) {
+//       consumer  
+//         .apply(BearerTokenCheckMiddleware)
+//         .forRoutes(
+//           // add middleware to route path that require Bearer Auth token validation
+//           // {path: 'user/create', method: RequestMethod.POST},
+//           // {path: 'user/edit/*', method: RequestMethod.PUT},
+//           // {path: 'user/delete/*', method: RequestMethod.DELETE},
+//           {path: 'enrollment/add', method: RequestMethod.POST},
+//           {path: 'enrollment/delete/*', method: RequestMethod.DELETE})
+//   }
+// }
