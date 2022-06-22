@@ -13,6 +13,7 @@ export class EnrollmentService {
     private readonly courseService: CourseService;
 
     private enrollments: Enrollment[] = [];
+    private id: number = 0;
 
     queryCourseUser(courseId: number){
         if (this.courseService.validId(courseId)){
@@ -31,21 +32,19 @@ export class EnrollmentService {
     }
 
     addEnroll(dto: addEnrollmentDto){
-        if (this.userService.validId(dto.userId) !== true)
-            throw new BadRequestException("Invalid userId!");
-        if (this.courseService.validId(dto.courseId) !== true)
-            throw new BadRequestException("Invalid courseId!");
-        if (dto.role.localeCompare('student') !== 0 && dto.role.localeCompare('teacher') !== 0)
-            throw new BadRequestException("Invalid role!");
+        if (!this.userService.validId(dto.userId)) throw new BadRequestException("Invalid userId!");
+        if (!this.courseService.validId(dto.courseId)) throw new BadRequestException("Invalid courseId!");
+        if (dto.role.localeCompare('student') !== 0 && dto.role.localeCompare('teacher') !== 0) throw new BadRequestException("Invalid role!");
+
         if (this.enrollments.some(obj => 
             obj.userId == dto.userId && 
             obj.courseId == dto.courseId &&
-            obj.role == dto.role) == true){
+            obj.role == dto.role)){
                 throw new BadRequestException("Enrollment Existed!");
             }
         else{
             this.enrollments.push({
-                'id': this.enrollments.length,
+                'id': this.id++,
                 'userId': Number(dto.userId),
                 'courseId': Number(dto.courseId),
                 'role': dto.role
@@ -55,23 +54,23 @@ export class EnrollmentService {
         }
     }
 
-    deleteEnroll(id: number){
-        if (this.validId(id)){
-            this.enrollments.splice(id,1)
+    deleteEnroll(enrollmentId: number){
+        if (this.validId(enrollmentId)){
+            this.enrollments.splice(enrollmentId,1)
             this.enrollments = enrollSorting(this.enrollments);
             console.log(this.enrollments);
-            return `Enrollment with id ${id} deleted!`
+            return `Enrollment with enrollmentId ${enrollmentId} deleted!`
         }
         else {
-            throw new BadRequestException("Invalid id! Enrollment not exists!");
+            throw new BadRequestException("Invalid enrollmentId!");
         }
     }
 
-    getEnroll(id: number){
-        if (this.validId(id))
-            return this.enrollments[id]
+    getEnroll(enrollmentId: number){
+        if (this.validId(enrollmentId))
+            return this.enrollments[enrollmentId]
         else
-            throw new BadRequestException("Invalid id! Enrollment not exists!");
+            throw new BadRequestException("Invalid enrollmentId!");
     }
 
     queryEnroll(dto: queryEnrollmentDto){

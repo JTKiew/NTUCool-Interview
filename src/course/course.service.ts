@@ -4,19 +4,16 @@ import { Course, courseData } from 'src/database';
 
 @Injectable()
 export class CourseService {
+    // using provided fixed courses dataset
+    // index courseId start from 0
     private courses: Course[] = courseData;
 
-    public getCourse(id: number){
-        if (this.validId(id))
-            return this.courses[id-1]
-        else
-            throw new BadRequestException("Invalid id! Course not exists!");
+    public getCourse(courseId: number){
+        if (this.validId(courseId)) return this.courses.filter(obj => obj.id === courseId)[0]
+        else throw new BadRequestException("Invalid courseId!");
     }
 
-    public validId(id: number){
-        if (id-1 < 0 || id-1 >= this.courses.length)
-            return false;
-        else
-            return true
+    validId(courseId: number){
+        return this.courses.some((obj) => (obj.id === courseId))
     }
 }

@@ -23,15 +23,15 @@ export class EnrollmentController {
 
     @ApiBearerAuth()
     // delete enrollment 
-    @Delete(':id')
-    deleteEnrollment(@Param('id', ParseIntPipe) id: number){
-        return this.enrollService.deleteEnroll(id);
+    @Delete(':enrollmentId')
+    deleteEnrollment(@Param('enrollmentId', ParseIntPipe) enrollmentId: number){
+        return this.enrollService.deleteEnroll(enrollmentId);
     }
 
     // get enrollment
-    @Get(':id')
-    getEnrollment(@Param('id', ParseIntPipe) id: number){
-        return this.enrollService.getEnroll(id);
+    @Get(':enrollmentId')
+    getEnrollment(@Param('enrollmentId', ParseIntPipe) enrollmentId: number){
+        return this.enrollService.getEnroll(enrollmentId);
     }
 
     // query enrollment by userId, courseId and role

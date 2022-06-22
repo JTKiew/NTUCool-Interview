@@ -28,6 +28,7 @@ export class UserController {
     }
     
     @ApiBearerAuth()
+    // edit User by userId
     @Put(':userId')
     edituser(
         @Param('userId', ParseIntPipe) userId: number, 
@@ -36,6 +37,7 @@ export class UserController {
     }
 
     @ApiBearerAuth()
+    // delete User by userId
     @Delete(':userId')
     deleteUser(@Param('userId', ParseIntPipe) userId: number){
         return this.userService.deleteUser(userId);
