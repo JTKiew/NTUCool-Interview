@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { addEnrollmentDto, queryEnrollmentDto} from 'src/dto';
+import { BearerAuthGuard } from 'src/guards/bearer-auth.guard.ts.guard';
 import { EnrollmentService } from './enrollment.service';
 
 @ApiTags('Enrollments')
@@ -18,12 +19,14 @@ export class EnrollmentController {
     @ApiBearerAuth()
     // create enrollment
     @Post()
+    @UseGuards(BearerAuthGuard)
     addEnrollment(@Body() dto: addEnrollmentDto){
         return this.enrollService.addEnroll(dto);
     }
 
     @ApiBearerAuth()
     // delete enrollment 
+    @UseGuards(BearerAuthGuard)
     @Delete(':enrollmentId')
     deleteEnrollment(@Param('enrollmentId', ParseIntPipe) enrollmentId: number){
         return this.enrollService.deleteEnroll(enrollmentId);

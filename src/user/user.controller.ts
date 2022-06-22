@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { createUserDto, editUserDto, queryUserDto } from 'src/dto';
+import { BearerAuthGuard } from 'src/guards/bearer-auth.guard.ts.guard';
 import { UserService } from './user.service';
  
 @ApiTags('Users')
@@ -10,6 +11,7 @@ export class UserController {
 
     @ApiBearerAuth()
     // create User
+    @UseGuards(BearerAuthGuard)
     @Post()
     createUser(@Body() dto: createUserDto){
         return this.userService.createUser(dto);
@@ -29,6 +31,7 @@ export class UserController {
     
     @ApiBearerAuth()
     // edit User by userId
+    @UseGuards(BearerAuthGuard)
     @Put(':userId')
     edituser(
         @Param('userId', ParseIntPipe) userId: number, 
@@ -38,6 +41,7 @@ export class UserController {
 
     @ApiBearerAuth()
     // delete User by userId
+    @UseGuards(BearerAuthGuard)
     @Delete(':userId')
     deleteUser(@Param('userId', ParseIntPipe) userId: number){
         return this.userService.deleteUser(userId);
