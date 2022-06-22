@@ -13,6 +13,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Courses, Enrollments, Users } from 'src/database';
 import { AddEnrollmentDto, QueryEnrollmentDto } from 'src/dto';
 import { BearerAuthGuard } from 'src/guards/bearer-auth.guard';
+import { RolesGuard } from 'src/guards/roles.guards';
+import { Role } from 'src/roles/role';
+import { Roles } from 'src/roles/roles.decorator';
 import { EnrollmentService } from './enrollment.service';
 
 @ApiTags('Enrollments')
@@ -29,14 +32,16 @@ export class EnrollmentController {
   @ApiBearerAuth()
   // create enrollment
   @Post()
-  @UseGuards(BearerAuthGuard)
+  @Roles(Role.Admin)
+  @UseGuards(BearerAuthGuard, RolesGuard)
   add(@Body() dto: AddEnrollmentDto): string {
     return this.enrollService.addEnrollment(dto.userId, dto.courseId, dto.role);
   }
 
   @ApiBearerAuth()
   // delete enrollment
-  @UseGuards(BearerAuthGuard)
+  @Roles(Role.Admin)
+  @UseGuards(BearerAuthGuard, RolesGuard)
   @Delete(':enrollmentId')
   delete(@Param('enrollmentId', ParseIntPipe) enrollmentId: number): string {
     return this.enrollService.deleteEnrollment(enrollmentId);

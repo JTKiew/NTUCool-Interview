@@ -42,18 +42,15 @@ export class EnrollmentService {
     if (!this.courseService.isValidId(courseId))
       throw new BadRequestException('Invalid courseId!');
 
-    if (
-      role.localeCompare('student') !== 0 &&
-      role.localeCompare('teacher') !== 0
-    )
+    if (role !== 'student' && role !== 'teacher')
       throw new BadRequestException('Invalid role!');
 
-    if (
-      this.enrollments.some(
-        (obj) =>
-          obj.userId == userId && obj.courseId == courseId && obj.role == role,
-      )
-    ) {
+    const exist = this.enrollments.some(
+      (obj) =>
+        obj.userId == userId && obj.courseId == courseId && obj.role == role,
+    );
+
+    if (exist) {
       throw new BadRequestException('Enrollment Existed!');
     } else {
       this.enrollments.push({
@@ -110,10 +107,7 @@ export class EnrollmentService {
 
     // if role not empty string or undefined, role used as query parameter
     if (String(role) !== '' && role != null) {
-      if (
-        role.localeCompare('student') !== 0 &&
-        role.localeCompare('teacher') !== 0
-      )
+      if (role !== 'student' && role !== 'teacher')
         throw new BadRequestException('Invalid role!');
       else filter.role = role;
     }
@@ -151,6 +145,7 @@ export class EnrollmentService {
   }
 
   isValidId(enrollmentId: number): boolean {
+    // enrollmentId might be string due to runtime, Number() to convert it
     return this.enrollments.some((obj) => obj.id === Number(enrollmentId));
   }
 }

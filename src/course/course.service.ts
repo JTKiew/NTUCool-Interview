@@ -14,6 +14,7 @@ export class CourseService {
   }
 
   isValidId(courseId: number): boolean {
+    // courseId might be string due to runtime, Number() to convert it
     return this.courses.some((obj) => obj.id === Number(courseId));
   }
 }

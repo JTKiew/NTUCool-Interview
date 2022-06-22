@@ -19,6 +19,10 @@
 ### Guards
 - contain guard for Bearer Token validation
 
+### Roles
+- contain custom decorator to assign roles to metadata
+- contain role enum
+
 ### Database
 - contain the initData for Restful API
 - contain the schema(type) for Users, Courses and Enrollments
@@ -39,7 +43,7 @@ graph LR
     B --> I("DELETE {/:userId}") 
     
     Pipes["Validation Pipes + ParseIntPipe <br> Validate and Transform input data type"]
-    Guards["BearerAuthGuard <br> Validate Bearer Token"]
+    Guards["BearerAuthGuard + RolesGuard <br> Validate Bearer Token and user's role"]
    
     F & G --> Pipes
     E & H & I --> Guards
@@ -78,7 +82,7 @@ graph LR
     C --> O("GET {/users/:userId/courses}")
 
     Pipes["Validation Pipes + ParseIntPipe <br> Validate and Transform input data type"]
-    Guards["BearerAuthGuard <br> Validate Bearer Token"]
+    Guards["BearerAuthGuard + RolesGuard <br> Validate Bearer Token and user's role"]
   
     J & M & N & O -->Pipes
     K & L --> Guards
@@ -130,6 +134,9 @@ flowchart LR
 ### return BadRequest 
 - `throw new BadRequestException({ErrMsg});`
 
+### return Unauthorized
+-  `throw new UnauthorizedException();`
+
 ### Bearer Auth token Header, token = 'cool'
 - use BearerAuthGuard to validate Bearer Token
 - carry Bearer Token in the header of html request 
@@ -139,9 +146,6 @@ flowchart LR
         - should get 
             - `bearerToken.length === 2`
             - `bearerToken[0] === 'Bearer' && bearerToken[1] === 'cool'`
-
-### return Unauthorized
--  `throw new UnauthorizedException();`
 
 ### Restful API issue
 - remove unecessary verbs in url path 
@@ -169,20 +173,35 @@ flowchart LR
 - previously differ in User, Enrollment and Course due to different id range
 - utilise arr.some(), user's isValidId as example: 
     ```
-    isValidId(userId: number): boolean {
-        return this.users.some((obj) => obj.id === Number(userId));
-      }
+        isValidId(userId: number): boolean {
+            return this.users.some((obj) => obj.id === Number(userId));
+          }
     ``` 
     
 ### replace middleware to guards
-- create `bearer-auth.guard.ts`
+#### implement `BearerAuthGuard`
 - fix `bearerToken[1]` might cause internal server error problem
     - check before access 
     ```
          if (bearerToken.length !== 2)
             throw new BadRequestException('Invalid Bearer Token!');
     ```
-- bind guard with decorator `useGuards(BearerAuthGuard)`
+- assign BearerAuthGuard with decorator `useGuards(BearerAuthGuard)`
+
+#### implement `RolesGuard`
+- in BearerAuthGuard, after pass Bearer Token validation, attach admin role info to HttpRequest
+    ```
+        if (bearerToken[0] === 'Bearer' && bearerToken[1] === 'cool') {
+            // attach user's role to HttpRequest
+            request.user = { roles: Role.Admin };
+            return true;
+        } 
+    ```
+- extract `requiredRoles` from metadata then verify with `user.roles` attached in HttpRequest
+    ```
+        return requiredRoles.some((role) => user.roles?.includes(role));
+    ```
+- assign RolesGuard with decorator `useGuards(RolesGuard)`
 
 ### coding style issue 
 - rename files name
@@ -192,5 +211,4 @@ flowchart LR
     -  https://angular.io/guide/styleguide 
     -  https://google.github.io/styleguide/tsguide.html
 
-### git commit issue
-- using `git rebase` to merge unnecessary commit
+

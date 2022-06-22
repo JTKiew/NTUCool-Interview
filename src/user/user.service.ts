@@ -7,7 +7,6 @@ export class UserService {
   private id = 5;
 
   createUser(username: string, email: string): string {
-    console.log(username, email);
     // if the field is not provided in http req, we might received undefined input value
     if (username == null || email == null)
       throw new BadRequestException('Invalid name or email!');
@@ -67,8 +66,8 @@ export class UserService {
           `No change towards user with userId ${userId}`,
         );
 
-      if (username !== '') this.users[userId].name = username;
-      if (email !== '') this.users[userId].email = email;
+      if (username && username !== '') this.users[userId].name = username;
+      if (email && email !== '') this.users[userId].email = email;
 
       console.log(this.users);
       return `User with userId ${userId} edited!`;
@@ -90,6 +89,7 @@ export class UserService {
   }
 
   isValidId(userId: number): boolean {
+    // userId might be string due to runtime, Number() to convert it
     return this.users.some((obj) => obj.id === Number(userId));
   }
 }
