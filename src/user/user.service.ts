@@ -9,7 +9,7 @@ export class UserService {
   createUser(username: string, email: string): string {
     console.log(username, email);
     // if the field is not provided in http req, we might received undefined input value
-    if (username == undefined || email == undefined)
+    if (username == null || email == null)
       throw new BadRequestException('Invalid name or email!');
 
     const exist = this.users.some((obj) => {
@@ -58,7 +58,7 @@ export class UserService {
     // if the field is not provided in http req, we might received undefined input value
     // either username or email can be not provided => no changes
     // provide at least one of them to be valid for edition
-    if (username == undefined && email == undefined)
+    if (username == null && email == null)
       throw new BadRequestException('Invalid name and email!');
 
     if (this.isValidId(userId)) {

@@ -21,10 +21,10 @@ export class EnrollmentService {
       throw new BadRequestException(`No enrollment with courseId ${courseId}!`);
 
     let users: Users[] = [];
-    this.enrollments.forEach((obj) => {
+    for (const obj of this.enrollments) {
       if (obj.courseId === courseId)
         users.push(this.userService.getUser(obj.userId));
-    });
+    }
     users.sort((a, b) => (b.id < a.id ? 1 : b.id > a.id ? -1 : 0));
     users = users.filter((obj, i) => i === users.indexOf(obj));
 
@@ -96,20 +96,20 @@ export class EnrollmentService {
     const filter: { [key: string]: any } = {};
 
     // if userId not empty string or undefined, userId used as query parameter
-    if (String(userId) !== '' && userId != undefined) {
+    if (String(userId) !== '' && userId != null) {
       if (this.userService.isValidId(userId)) filter.userId = Number(userId);
       else throw new BadRequestException('Invalid userId!');
     }
 
     // if courseId not empty string or undefined, courseId used as query parameter
-    if (String(courseId) !== '' && courseId != undefined) {
+    if (String(courseId) !== '' && courseId != null) {
       if (this.courseService.isValidId(courseId))
         filter.courseId = Number(courseId);
       else throw new BadRequestException('Invalid courseid!');
     }
 
     // if role not empty string or undefined, role used as query parameter
-    if (String(role) !== '' && role != undefined) {
+    if (String(role) !== '' && role != null) {
       if (
         role.localeCompare('student') !== 0 &&
         role.localeCompare('teacher') !== 0
@@ -132,7 +132,7 @@ export class EnrollmentService {
     }
   }
 
-  queryUserCourse(userId: number): Courses[] {
+  queryUserCourses(userId: number): Courses[] {
     if (!this.userService.isValidId(userId))
       throw new BadRequestException('Invalid userId!');
 
@@ -140,10 +140,10 @@ export class EnrollmentService {
       throw new BadRequestException(`No enrollment with userId ${userId}!`);
 
     let courses: Courses[] = [];
-    this.enrollments.forEach((obj) => {
+    for (const obj of this.enrollments) {
       if (obj.userId === userId)
         courses.push(this.courseService.getCourse(obj.courseId));
-    });
+    }
     courses.sort((a, b) => (b.id < a.id ? 1 : b.id > a.id ? -1 : 0));
     courses = courses.filter((obj, i) => i === courses.indexOf(obj));
 

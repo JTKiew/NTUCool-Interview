@@ -61,6 +61,6 @@ export class EnrollmentController {
   // query Courses by userId
   @Get('users/:userId/courses')
   queryCourse(@Param('userId', ParseIntPipe) userId: number): Courses[] {
-    return this.enrollService.queryUserCourse(userId);
+    return this.enrollService.queryUserCourses(userId);
   }
 }
