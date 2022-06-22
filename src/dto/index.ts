@@ -1,6 +1,5 @@
-export * from './addEnroll.dto'
-export * from './queryEnroll.dto'
-export * from './createUser.dto'
-export * from './edituser.dto'
-export * from './queryUser.dto'
-
+export * from './add-enrollment.dto';
+export * from './query-enrollment.dto';
+export * from './create-user.dto';
+export * from './edit-user.dto';
+export * from './query-user.dto';

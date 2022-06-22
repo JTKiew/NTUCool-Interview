@@ -1,78 +1,95 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { userData, Users } from 'src/database';
-import { createUserDto, editUserDto, queryUserDto } from 'src/dto';
-import { userSorting } from 'src/Utility/Sorting';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { UserData, Users } from 'src/database';
 
 @Injectable()
 export class UserService {
-    private users: Users[] = userData;
-    private id: number = 5;
+  private users: Users[] = UserData;
+  private id = 5;
 
-    createUser(dto: createUserDto){
-        // if the field is not provided in http req, we might received undefined input value
-        if (dto.name === undefined || dto.email === undefined) throw new BadRequestException("Invalid name or email!");
+  createUser(username: string, email: string): string {
+    console.log(username, email);
+    // if the field is not provided in http req, we might received undefined input value
+    if (username == undefined || email == undefined)
+      throw new BadRequestException('Invalid name or email!');
 
-        let exist = this.users.some((obj) => (
-            obj.name === dto.name || obj.email === dto.email));
+    const exist = this.users.some((obj) => {
+      if (obj.name === username || obj.email === email) return true;
+    });
 
-        if (exist) throw new BadRequestException("Name or Email already been used!");
+    if (exist)
+      throw new BadRequestException('Name or Email already been used!');
 
-        this.users.push({
-            id: this.id++ , 
-            name: dto.name,
-            email: dto.email
-        });
+    this.users.push({
+      id: this.id++,
+      name: username,
+      email: email,
+    });
 
-        console.log(this.users)
-        return `User ${dto.name} created!`
+    console.log(this.users);
+    return `User ${username} created!`;
+  }
+
+  getUser(userId: number): Users {
+    if (this.isValidId(userId))
+      return this.users.filter((obj) => obj.id === userId)[0];
+    else throw new BadRequestException('Invalid userId!');
+  }
+
+  queryUser(filter: string, str: string): Users {
+    if (filter !== 'name' && filter !== 'email')
+      throw new BadRequestException('Invalid filter!');
+
+    if (filter === 'name') {
+      if (!this.users.some((obj) => obj.name == str))
+        throw new BadRequestException('Invalid name!');
+
+      return this.users.filter((obj) => obj.name === str)[0];
     }
 
-    getUser(userId: number){
-        if (this.validId(userId)) return this.users.filter(obj => obj.id === userId)[0]
-        else throw new BadRequestException("Invalid userId!");
+    if (filter === 'email') {
+      if (!this.users.some((obj) => obj.email == str))
+        throw new BadRequestException('Invalid email!');
+
+      return this.users.filter((obj) => obj.email === str)[0];
     }
+  }
 
-    // TODO: create custom validation pipes for blank name
-    queryUser(dto: queryUserDto){
-        console.log(dto)
-        if (dto.filter !== 'name' && dto.filter !== 'email') throw new BadRequestException("Invalid filter!");
+  editUser(userId: number, username: string, email: string): string {
+    // if the field is not provided in http req, we might received undefined input value
+    // either username or email can be not provided => no changes
+    // provide at least one of them to be valid for edition
+    if (username == undefined && email == undefined)
+      throw new BadRequestException('Invalid name and email!');
 
-        if (dto.filter === "name"){
-            if (!this.users.some(obj => obj.name == dto.str)) throw new BadRequestException("Invalid name!");
-            return this.users.filter(obj => obj.name === dto.str);
-        }
-        
-        if (dto.filter === "email"){
-            if (!this.users.some(obj => obj.email == dto.str)) throw new BadRequestException("Invalid email!");
-            return this.users.filter(obj => obj.email === dto.str);
-        }
+    if (this.isValidId(userId)) {
+      if (username === '' && email === '')
+        throw new BadRequestException(
+          `No change towards user with userId ${userId}`,
+        );
+
+      if (username !== '') this.users[userId].name = username;
+      if (email !== '') this.users[userId].email = email;
+
+      console.log(this.users);
+      return `User with userId ${userId} edited!`;
+    } else {
+      throw new BadRequestException('Invalid userId!');
     }
+  }
 
-    editUser(userId: number, dto: editUserDto){
-        // if the field is not provided in http req, we might received undefined input value
-        if (dto.name === undefined || dto.email === undefined) throw new BadRequestException("Invalid name or email!");
+  deleteUser(userId: number): string {
+    if (this.isValidId(userId)) {
+      const index = this.users.findIndex((obj) => obj.id === userId);
+      this.users.splice(index, 1);
 
-        if (this.validId(userId)){
-            if (dto.name === '' && dto.email === '') throw new BadRequestException(`No change towards user with userId ${userId}`)
-            if (dto.name !== '')  this.users[userId].name = dto.name;
-            if (dto.email !== '') this.users[userId].email = dto.email;
-            console.log(this.users)
-            return `User with userId ${userId} edited!`
-        }
-        else throw new BadRequestException("Invalid userId!");
+      console.log(this.users);
+      return `User with id ${userId} deleted!`;
+    } else {
+      throw new BadRequestException('Invalid userId!');
     }
+  }
 
-    deleteUser(userId: number){
-        if (this.validId(userId)){
-            const index = this.users.findIndex(obj => obj.id === userId)
-            this.users.splice(index,1);
-            console.log(this.users);
-            return `User with userId ${userId} deleted!`;
-        }
-        else throw new BadRequestException("Invalid userId!");
-    }
-
-    validId(userId: number){
-        return this.users.some((obj) => (obj.id === Number(userId)));
-    }
+  isValidId(userId: number): boolean {
+    return this.users.some((obj) => obj.id === Number(userId));
+  }
 }
