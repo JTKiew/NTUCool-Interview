@@ -11,8 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Users } from 'src/database';
 import { CreateUserDto, EditUserDto, QueryUserDto } from 'src/dto';
+import { Users } from 'src/entities';
 import { BearerAuthGuard } from 'src/guards/bearer-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guards';
 import { Role } from 'src/roles/role';
@@ -29,19 +29,19 @@ export class UserController {
   @Roles(Role.Admin)
   @UseGuards(BearerAuthGuard, RolesGuard)
   @Post()
-  create(@Body() dto: CreateUserDto): string {
+  create(@Body() dto: CreateUserDto): Promise<Users> {
     return this.userService.createUser(dto.username, dto.email);
   }
 
   // get User by userId
   @Get(':userId')
-  get(@Param('userId', ParseIntPipe) userId: number): Users {
-    return this.userService.getUser(userId);
+  get(@Param('userId', ParseIntPipe) userId: number): Promise<Users> {
+    return this.userService.getUserById(userId);
   }
 
   // query User by name / email
   @Get()
-  query(@Query() dto: QueryUserDto): Users {
+  query(@Query() dto: QueryUserDto): Promise<Users> {
     return this.userService.queryUser(dto.filter, dto.str);
   }
 
@@ -53,8 +53,8 @@ export class UserController {
   edit(
     @Param('userId', ParseIntPipe) userId: number,
     @Body() dto: EditUserDto,
-  ): string {
-    return this.userService.editUser(userId, dto.username, dto.email);
+  ): Promise<Users> {
+    return this.userService.editUserById(userId, dto.username, dto.email);
   }
 
   @ApiBearerAuth()
@@ -62,7 +62,7 @@ export class UserController {
   @Roles(Role.Admin)
   @UseGuards(BearerAuthGuard, RolesGuard)
   @Delete(':userId')
-  delete(@Param('userId', ParseIntPipe) userId: number): string {
-    return this.userService.deleteUser(userId);
+  delete(@Param('userId', ParseIntPipe) userId: number): Promise<Users> {
+    return this.userService.deleteUserById(userId);
   }
 }

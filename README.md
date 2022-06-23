@@ -1,34 +1,48 @@
 # NTUCool-Interview
 
 ## Preparation and Installation
-- install nest.js using `npm install -g @nestjs/cli`
-- install the required modules through `npm install`
-- run the Web API with `npm run start`
+### Nest.js
+- install nest.js
+    -  `npm install -g @nestjs/cli`
+- install the required modules through 
+    - `npm install`
+- run the Web API with 
+    - `npm run start`
 - test the Web API through API tester like Postman(https://www.postman.com/), Insomnia(https://insomnia.rest/) 
+### Local mysql database
+- install mysql
+    - `apt install mysql-server`
+- create database `ntucool` in mysql
+    - `CREATE DATABASE ntucool;`
+- create user `admin` in mysql
+    ```
+        CREATE USER admin@localhost IDENTIFIED BY admin;
+        GRANT ALL PRIVILEGES ON ntucool.* TO admin@localhost WITH GRANT OPTION
+        FLUSH PRIVILEGES;
+    ```
+   
 
 ## Directories & Files
-### User 
-- contain module, controller and service related to users
-
-### Course
-- contain module, controller and service related to courses
-
-### Enrollment
-- contain module, controller and service related to enrollments
-
-### Guards
-- contain guard for Bearer Token validation
-
-### Roles
-- contain custom decorator to assign roles to metadata
-- contain role enum
-
+### Config
+- TypeORM config for local mysql database connection 
+- 
 ### Database
-- contain the initData for Restful API
-- contain the schema(type) for Users, Courses and Enrollments
+- initData for Users, Courses and Enrollments
 
 ### Dto
-- dto directory kept format for how the data sent over the network
+- Formats for how the data sent over the network
+
+### Entities
+- TypeORM entity for local mysql database
+
+### Guards
+- Guards for Bearer Token validation and Role authorization
+
+### Modules
+- User module, Enrollment module and Course module
+
+### Roles
+- Custom decorator (to assign roles to metadata) and role enum
 
 ## Restful API
 ### User API
@@ -43,7 +57,7 @@ graph LR
     B --> I("DELETE {/:userId}") 
     
     Pipes["Validation Pipes + ParseIntPipe <br> Validate and Transform input data type"]
-    Guards["BearerAuthGuard + RolesGuard <br> Validate Bearer Token and user's role"]
+    Guards["BearerAuthGuard <br> Validate Bearer Token"]
    
     F & G --> Pipes
     E & H & I --> Guards
@@ -82,7 +96,7 @@ graph LR
     C --> O("GET {/users/:userId/courses}")
 
     Pipes["Validation Pipes + ParseIntPipe <br> Validate and Transform input data type"]
-    Guards["BearerAuthGuard + RolesGuard <br> Validate Bearer Token and user's role"]
+    Guards["BearerAuthGuard <br> Validate Bearer Token"]
   
     J & M & N & O -->Pipes
     K & L --> Guards
@@ -108,6 +122,7 @@ graph LR
 - get Enrollment: **GET**`.../enrollments/:enrollmentId`
 - query Enrollments: **GET**`..../enrollments?userId= &courseId= &role= `
 - query User Courses: **GET**`.../enrollments/users/:userId/courses`
+
 ### Course API
 ``` mermaid
 %%{ init : { "theme" : "default", "flowchart" : { "curve" : "linear" }}}%%
@@ -146,13 +161,15 @@ flowchart LR
         - should get 
             - `bearerToken.length === 2`
             - `bearerToken[0] === 'Bearer' && bearerToken[1] === 'cool'`
-
+---
 ### Restful API issue
 - remove unecessary verbs in url path 
 - new API stated above 
 
-### userId issue
-- previously using users[] array index as userId
+### userId issue (using arr.index as userId)
+- fixed after implement typeORM using local mysql database
+- using mysql autoincrement id (start at 1)
+<!-- - previously using users[] array index as userId
     - loss the unique property of userId
 - solution
     - declare a `private id = 5` variable, update after each user creation
@@ -163,20 +180,30 @@ flowchart LR
                   name: username,
                   email: email,
                 });
-        ```
+        ``` -->
 
-### courseId issue
-- previously start at 1, now start at 0 
-- total of 5 entries according to dataset provided
+### courseId issue (start from index 1)
+- fixed after implement typeORM using local mysql database
+- using mysql autoincrement id (start at 1)
+- total of 5 entries according to dataset provided 
+<!-- - previously start at 1, now start at 0 
+- total of 5 entries according to dataset provided -->
 
-### isValidId modification
-- previously differ in User, Enrollment and Course due to different id range
+### isValidId issue (using arr.index, inconsistent due to different index range)
+- using TypeORM.find() to check database entries
+```
+    const exist = await this.coursesRepository.findOneBy({
+      id: Number(courseId),
+    });
+    return exist === null ? false : true;
+```
+<!-- - previously differ in User, Enrollment and Course due to different id range
 - utilise arr.some(), user's isValidId as example: 
     ```
         isValidId(userId: number): boolean {
             return this.users.some((obj) => obj.id === Number(userId));
           }
-    ``` 
+    ```  -->
     
 ### replace middleware to guards
 #### implement `BearerAuthGuard`
@@ -188,12 +215,17 @@ flowchart LR
     ```
 - assign BearerAuthGuard with decorator `useGuards(BearerAuthGuard)`
 
+#### implement custom decorator `@Roles()`
+- Role enum contain two roles, User and Admin
+- custom decorator to attach required roles to the metadata
+- assign role with `@Roles(Role.Admin)`
+
 #### implement `RolesGuard`
-- in BearerAuthGuard, after pass Bearer Token validation, attach admin role info to HttpRequest
+- in **BearerAuthGuard**, after pass Bearer Token validation, attach admin role info to HttpRequest
     ```
         if (bearerToken[0] === 'Bearer' && bearerToken[1] === 'cool') {
             // attach user's role to HttpRequest
-            request.user = { roles: Role.Admin };
+            request.user = { roles: Role.User };
             return true;
         } 
     ```
@@ -205,10 +237,38 @@ flowchart LR
 
 ### coding style issue 
 - rename files name
+- readjust files structure
 - rename variables, functions, classes name using camelCase and PascalCase
 - implement prettier and eslint to help adjusting code structure
 -  references: 
     -  https://angular.io/guide/styleguide 
     -  https://google.github.io/styleguide/tsguide.html
 
-
+### implement TypeORM with local mysql database
+- connect to local mysql database with `typeorm.config.ts`
+- create 3 entities for users, enrollments and courses
+- implement TypeORM  One-to-Many and Many-to-One relation towards UserEntity--EnrollmentEntity and CourseEntity--EnrollmentEntity
+- implement TypeORM functions (find(), findOneBy(), createQueryBuilder() etc) in service providers functions
+``` mermaid
+erDiagram 
+    ENROLLMENT }|--|| USER: enroll
+    ENROLLMENT }|--|| COURSE: link
+    
+    USER{
+    id number
+    name string
+    email string
+    }
+    
+    ENROLLMENT{
+    id number
+    userId number
+    courseId number
+    role string
+    }
+    
+    COURSE{
+    id number
+    name string 
+    }
+```

@@ -1,14 +1,32 @@
 export const EnrollmentData = [
   {
-    id: 0,
-    userId: 0,
+    userId: 1,
+    courseId: 3,
+    role: 'student',
+  },
+  {
+    userId: 2,
+    courseId: 2,
+    role: 'student',
+  },
+  {
+    userId: 2,
     courseId: 1,
     role: 'student',
   },
   {
-    id: 1,
-    userId: 0,
+    userId: 4,
+    courseId: 1,
+    role: 'student',
+  },
+  {
+    userId: 3,
     courseId: 2,
     role: 'student',
+  },
+  {
+    userId: 3,
+    courseId: 2,
+    role: 'teacher',
   },
 ];

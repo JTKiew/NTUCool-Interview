@@ -10,8 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Courses, Enrollments, Users } from 'src/database';
 import { AddEnrollmentDto, QueryEnrollmentDto } from 'src/dto';
+import { Enrollments } from 'src/entities';
 import { BearerAuthGuard } from 'src/guards/bearer-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guards';
 import { Role } from 'src/roles/role';
@@ -25,7 +25,9 @@ export class EnrollmentController {
 
   // query Users by courseId
   @Get('courses/:courseId/users')
-  queryUser(@Param('courseId', ParseIntPipe) courseId: number): Users[] {
+  queryUser(
+    @Param('courseId', ParseIntPipe) courseId: number,
+  ): Promise<Enrollments[]> {
     return this.enrollService.queryCourseUsers(courseId);
   }
 
@@ -34,7 +36,7 @@ export class EnrollmentController {
   @Post()
   @Roles(Role.Admin)
   @UseGuards(BearerAuthGuard, RolesGuard)
-  add(@Body() dto: AddEnrollmentDto): string {
+  add(@Body() dto: AddEnrollmentDto): Promise<Enrollments> {
     return this.enrollService.addEnrollment(dto.userId, dto.courseId, dto.role);
   }
 
@@ -43,19 +45,23 @@ export class EnrollmentController {
   @Roles(Role.Admin)
   @UseGuards(BearerAuthGuard, RolesGuard)
   @Delete(':enrollmentId')
-  delete(@Param('enrollmentId', ParseIntPipe) enrollmentId: number): string {
-    return this.enrollService.deleteEnrollment(enrollmentId);
+  delete(
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ): Promise<Enrollments> {
+    return this.enrollService.deleteEnrollmentById(enrollmentId);
   }
 
   // get enrollment
   @Get(':enrollmentId')
-  get(@Param('enrollmentId', ParseIntPipe) enrollmentId: number): Enrollments {
-    return this.enrollService.getEnrollment(enrollmentId);
+  get(
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ): Promise<Enrollments> {
+    return this.enrollService.getEnrollmentById(enrollmentId);
   }
 
   // query enrollment by userId, courseId and role
   @Get()
-  queryEnrollment(@Query() dto: QueryEnrollmentDto): Enrollments[] {
+  queryEnrollment(@Query() dto: QueryEnrollmentDto): Promise<Enrollments[]> {
     return this.enrollService.queryEnrollments(
       dto.userId,
       dto.courseId,
@@ -65,7 +71,9 @@ export class EnrollmentController {
 
   // query Courses by userId
   @Get('users/:userId/courses')
-  queryCourse(@Param('userId', ParseIntPipe) userId: number): Courses[] {
+  queryCourse(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<Enrollments[]> {
     return this.enrollService.queryUserCourses(userId);
   }
 }
